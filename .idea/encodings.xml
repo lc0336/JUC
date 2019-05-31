@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/src/com/atguigu/eight/CountDownDemo.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/com/atguigu/five/Phone.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/com/atguigu/five/Test.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/com/atguigu/four/Resource.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/com/atguigu/four/WaitNotifyDemo02.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/com/atguigu/nine/CyclicBarrierDemo.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/com/atguigu/seven/ReadWriteLockDemo.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/com/atguigu/seven/Resource.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/com/atguigu/six/CallableDemo.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/com/atguigu/six/CallableTest.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/com/atguigu/ten/SemaphoreDemo.java" charset="GBK" />
+  </component>
+</project>
