@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 public class SemaphoreDemo {
 
 	public static void main(String[] args) {
+
+
 		//三个车位
 		Semaphore s = new Semaphore(3);
 		//六辆车
