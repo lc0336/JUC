@@ -1,12 +1,12 @@
-#juc多线程
+juc多线程
 java.util.concurrent(并发)
-##概念复习
+概念复习
  进程:正在进行中的程序
  线程:进程当中的一个执行单元
  关系: 进程包含线程
  面试问题:
 	日常使用进程/线程的案例或者case
-###线程的各种状态:
+线程的各种状态:
 	Thread.state --枚举
 	(需手写记忆)
 	进入源码:NEW --新建
@@ -15,7 +15,7 @@ java.util.concurrent(并发)
 			WAITING  --等待         --不见不散
 			TIMED_WAITING--等待     --过时不候
 			TERMINATED-- 终结
-##案例1--买票
+案例1--买票
 	需求:三个窗口  卖出  30张票
 	提纲:-->上篇
 		1,线程		操作(资源类中的实例方法)		资源类
@@ -54,11 +54,9 @@ java.util.concurrent(并发)
 						},"A窗口");
     			}
     		}
-####Lock 接口
+Lock 接口
 	实现类:重入锁 Package java.util.concurrent.locks
-	//官方解释
-	`Lock implementations provide more extensive(广阔的) locking operations than can be obtained using synchronized methods and statements. They allow more flexible structuring, may have quite different properties, and may support multiple(复杂的) associated(联合) Condition objects. `
-
+	
 	实现类:
 		ReentrantLock(可重入锁)
 	如何使用(查看文档):
@@ -80,12 +78,12 @@ java.util.concurrent(并发)
 		mycurr -->打印当前线程的名称
 		mynewcurr01 -->匿名内部类创建线程对象
 		mynewcurr02 -->lambda表达式创建线程
-##lamda表达式:
+lamda表达式:
 	就是用来解决匿名内部类代码冗余问题
-###传统的接口实现类实现方式
+传统的接口实现类实现方式
 	第一种方式:需要重新编写一个类用来是新建该接口,并重写接口中的方法
 	第二种方式:使用匿名内部类
-###接口中方法为空参空返回
+接口中方法为空参空返回
 	1,接口当中有且只有一个方法时,在编写实现类的时候肯定不会找错,所以方法名可以省略 也就是该接口为函数式接口
     	**拷贝中括号(方法的参数列表),写死右箭头,落地大括号(为方法体)**
     	interface Foo{
@@ -94,7 +92,7 @@ java.util.concurrent(并发)
     	使用lamda表达式实例化
     	new Foo()->{}
 	2,@FunctionalInterface 接口中有且仅有只有一个public abstract方法,使用该注解来增强定义
-###接口中方法为有参又返回
+接口中方法为有参又返回
 	interface Foo{
 		public int add(int x,int y);
 	}
@@ -106,7 +104,7 @@ java.util.concurrent(并发)
 	new Foo  = (x,y)->{
 		return x+y;
 	};
-###default方法实现
+default方法实现
 	@FunctionalInterface
 	interface Foo{
 		public int(int x,int y);
@@ -115,7 +113,7 @@ java.util.concurrent(并发)
 		}
 	}
 	default 方法在接口中可以定义多个,那么如何调用呢?
-###静态方法实现
+静态方法实现
 	@FunctionalInterface
 	interface Foo{
 		public int(int x,int y);
@@ -128,7 +126,7 @@ java.util.concurrent(并发)
 		return x-y
 		}
 --------------------------------------------------------------------------------
-##线程间通信
+线程间通信
 	概要:
 		1,生产者+消费者
 		2,通知等待唤醒机制
@@ -161,7 +159,7 @@ java.util.concurrent(并发)
 				查看Object类中wait方法的官方说明
 				As in the one argument(情况) version, interrupts and spurious wakeups are possible, and this method should always be used in a loop
 			解决:使用while循环来判断
-###修改为java8新版
+修改为java8新版
 	1,引入condition接口 -->查看API文档-->从Lock的API中可以看到condition的影子-->跳转到condition的文档
 		private Lock lock = new ReentrantLock();
 		private Condition condition = lock.newCondition();
@@ -174,7 +172,7 @@ java.util.concurrent(并发)
 
 	obj.wait                   obj.notify       condition.await      condition.signalAll 
 ------------------------------------------------------------------------------------------
-##案例3 Lock+多condition(一锁多把备用钥匙)
+案例3 Lock+多condition(一锁多把备用钥匙)
 	考察核心:永远保证线程按照指定顺序执行   使用synchronized很复杂,且它为重锁,一旦释放,必导致多个线程对资源执行权的争抢
     	多个线程之间按顺序调用 实现 A->B->C
     	三个线程启动,要求如下:
@@ -182,92 +180,14 @@ java.util.concurrent(并发)
     	接着
     	AA打印5次,BB打印10次,CC打印15次
     	.....循环10轮
-	代码:
-    		public class ShareResource {
-    		
-    		private int number = 1; //1:A 2:B 3:C
-    		private Lock lock = new ReentrantLock();
-    		private Condition c1 = lock.newCondition();
-    		private Condition c2 = lock.newCondition();
-    		private Condition c3 = lock.newCondition();
-    		
-    		public void print5(int loopNumber) {
-    			lock.lock();
-    			try {
-    				//判断
-    				while(number!=1) {
-    					//跳出
-    					c1.await();
-    				}
-    				//干活
-    				
-    				for (int i = 1; i <= 5; i++) {
-    					System.out.println(Thread.currentThread().getName()+"\t"+"第"+i+"次打印"+"第"+loopNumber+"轮");
-    				}
-    				//通知
-    				number=2;
-    				c2.signal();
-    			} catch (Exception e) {
-    				e.printStackTrace();
-    			} finally {
-    				lock.unlock();
-    			}
-    			
-    		}
-    		
-    		
-    		public void print10(int loopNumber) {
-    			lock.lock();
-    			try {
-    				//判断
-    				while(number!=2) {
-    					//跳出
-    					c2.await();
-    				}
-    				//干活
-    				
-    				for (int i = 1; i <= 10; i++) {
-    					System.out.println(Thread.currentThread().getName()+"\t"+"第"+i+"次打印"+"第"+loopNumber+"轮");
-    				}
-    				//通知
-    				number=3;
-    				c3.signal();
-    			} catch (Exception e) {
-    				e.printStackTrace();
-    			} finally {
-    				lock.unlock();
-    			}
-    		}
-    		public void print15(int loopNumber) {
-    			lock.lock();
-    			try {
-    				//判断
-    				while(number!=3) {
-    					//跳出
-    					c3.await();
-    				}
-    				//干活
-    				
-    				for (int i = 1; i <= 15; i++) {
-    					System.out.println(Thread.currentThread().getName()+"\t"+"第"+i+"次打印"+"第"+loopNumber+"轮");
-    				}
-    				//通知
-    				number=1;
-    				c1.signal();
-    			} catch (Exception e) {
-    				e.printStackTrace();
-    			} finally {
-    				lock.unlock();
-    			}
-    		}
-    		
-    	}
+	<--项目中案例-->
+	
 总结:
 	资源的保护需要加锁
 	生产者消费者模式--线程的通信
 	加锁+加通信+线程之间的调度访问
-
-##多线程锁(8锁)
+	
+多线程锁(8锁)
 	1 标准访问，先打印短信还是邮件(欲扬先抑)
 		同一时间段,被锁的是整个资源类
 		短信
@@ -287,7 +207,7 @@ java.util.concurrent(并发)
 		前者锁工厂,后者锁具体事例,两把不同锁
 	8 1个静态同步方法，1个普通同步方法，2部手机，先打印短信还是邮件
 		两把不同的锁
-##callable接口获取多线程
+callable接口获取多线程
 	问题:
 		1,创建线程有几种方式?
 		2,试着去写出Runnable和callable接口创建线程的代码...
@@ -295,7 +215,7 @@ java.util.concurrent(并发)
 			 答 （1）是否有返回值
        			（2）是否抛异常
        			（3）落地方法不一样，一个是run，一个是call
-###第三种获取java多线程的方法
+第三种获取java多线程的方法
 	1,自定义类实现callable接口
     	public class MyThread implements Callable<Integer> {
     	@Override
@@ -313,7 +233,7 @@ java.util.concurrent(并发)
     		Integer integer = task.get();    		
     		System.out.println(integer); 		
     	}
-###为什么(*************************************************)
+为什么(*************************************************)
 	一共三个方面,见 1,2,3三点总结
 	Future(未来)Task:用来实现   异步调用
 	1,  正常的代码流程:自顶向下,逐步求精
@@ -342,7 +262,8 @@ java.util.concurrent(并发)
 		仅在计算完成时才能检索结果；如果计算尚未完成，则阻塞 get 方法。一旦计算完成，
 		就不能再重新开始或取消计算。get方法获取结果只有在计算完成时获取，否则会一直阻塞直到任务转入完成状态，
 		然后会返回结果或者抛出异常。 
-##JUC强大的辅助类介绍
+		
+JUC强大的辅助类介绍
 	JUC下一共有三个接口 其中Lock 与 Condition 已经接触过,还剩一个 ReadWriteLock
 	1,读写锁 ReadWriteLock接口(读写一起)
 		举例分析:
@@ -361,18 +282,8 @@ java.util.concurrent(并发)
 			班级晚自习撤离战术(其他线程执行完毕之后,主线程才可以执行)
 			先演示问题...
 			以下为解决code
-			code:
-			    	public static void main(String[] args) throws InterruptedException {
-    					CountDownLatch c = new CountDownLatch(6);
-    					for (int i = 1; i <= 6; i++) {
-    						new Thread(() -> {
-    							System.out.println(Thread.currentThread().getName()+"\t 离开教室");
-    							c.countDown();
-    						}, String.valueOf(i)).start();
-    					}
-    					c.await();
-    					System.out.println(Thread.currentThread().getName()+"\t 班长离开");
-    				}
+			<--项目中案例-->
+			
 	3,CyclicBarrier  循环栅栏
 		概念:
 			字面意思是可循环（Cyclic）使用的屏障（Barrier）。它要做的事情是，让一组线程到达一个屏障（也可以叫同步点）时被阻塞，直到最后一个线程到达屏障时，屏障才会开门，所有被屏障拦截的线程才会继续干活
@@ -382,26 +293,8 @@ java.util.concurrent(并发)
 		案例:
 			开会必须等人齐了才能开会
 			约定爬山,必须等人齐了才能出发
-		code:
-			public class CyclicBarrierDemo {
-				private static final int NUMBER = 7;
-				public static void main(String[] args) {
-					CyclicBarrier c = new CyclicBarrier(NUMBER, ()->{
-						System.out.println("人到齐我们去爬山");
-					});
-					for (int i = 1; i <=NUMBER; i++) {
-						final int intTemp = i;
-						new Thread(() -> {
-							System.out.println(Thread.currentThread().getName()+"第"+intTemp+"人");
-							try {
-								c.await();
-							} catch (InterruptedException | BrokenBarrierException e) {
-								e.printStackTrace();
-							}
-						}, String.valueOf(i)).start();
-					}
-				}
-		}
+	<--项目中案例-->
+	
 	4,Semaphore信号灯
 		概念:
 			在信号灯上我们定义两种操作：
@@ -410,25 +303,5 @@ java.util.concurrent(并发)
 				信号量主要用于两个目的，一个是用于多个共享资源的互斥使用，另一个用于并发线程数的控制。
 		案例:
 			争车位  20部汽车争抢10个停车位
-		code:
-				    public static void main(String[] args) {
-    					//三个车位
-    					Semaphore s = new Semaphore(3);
-    					//六辆车
-    					for (int i = 1; i <= 6; i++) {
-    						new Thread(() -> {
-    							try {
-    								//征服,占用
-    								s.acquire();
-    								System.out.println(Thread.currentThread().getName()+"\t 抢到了车位");
-    								TimeUnit.SECONDS.sleep(4);
-    								System.out.println(Thread.currentThread().getName()+"\t-----离开了车位");
-    							} catch (InterruptedException e) {
-    								e.printStackTrace();
-    							}finally {
-    								s.release();
-    							}
-    						}, String.valueOf(i)).start();
-    					}
-    				}
+			<--项目中案例-->
 	 	资源的控制和并发的调度
